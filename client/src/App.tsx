@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
+import SplashScreen from "./components/SplashScreen";
 import MapPage from "./pages/MapPage";
 import SessionsPage from "./pages/SessionsPage";
 import SessionDetailPage from "./pages/SessionDetailPage";
@@ -8,6 +10,12 @@ import PlaceDetailPage from "./pages/PlaceDetailPage";
 import MyPage from "./pages/MyPage";
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return <SplashScreen onDone={() => setShowSplash(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-canvas">
       <Routes>
