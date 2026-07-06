@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  telegramId String   @unique
+  username   String?
+  firstName  String
+  lastName   String?
+  photoUrl   String?
+  createdAt  DateTime @default(now())
+
+  createdSessions Session[]     @relation("SessionCreator")
+  participations  Participant[]
+  bookingRequests BookingRequest[]
+}
+
+model Place {
+  id           String   @id @default(cuid())
+  name         String
+  address      String
+  lat          Float
+  lng          Float
+  description  String?
+  photoUrl     String?
+  pricePerHour Int?
+  pricePerDay  Int?
+  amenities    String?  // comma-separated tags, e.g. "wifi,coffee,quiet-zone"
+  createdAt    DateTime @default(now())
+
+  sessions        Session[]
+  bookingRequests BookingRequest[]
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  title            String
+  topic            String
+  description      String?
+  startsAt         DateTime
+  maxParticipants  Int?
+  customLocation   String?
+  reminderSentAt   DateTime?
+  createdAt        DateTime @default(now())
+
+  place     Place?  @relation(fields: [placeId], references: [id])
+  placeId   String?
+
+  creator   User    @relation("SessionCreator", fields: [creatorId], references: [id])
+  creatorId String
+
+  participants Participant[]
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  joinedAt  DateTime @default(now())
+
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@unique([sessionId, userId])
+}
+
+// status: "pending" | "confirmed" | "cancelled"
+model BookingRequest {
+  id          String   @id @default(cuid())
+  date        DateTime
+  startTime   String   // "HH:mm"
+  endTime     String   // "HH:mm"
+  peopleCount Int
+  comment     String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  place   Place  @relation(fields: [placeId], references: [id])
+  placeId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+}
